@@ -13,7 +13,7 @@ import { __ } from "@wordpress/i18n";
  */
 import { useBlockProps } from "@wordpress/block-editor";
 import { useSelect } from "@wordpress/data";
-import fetchData from "./fetchData";
+import { customStore } from "./store/createStore";
 
 /**
  * Lets webpack process CSS, SASS or SCSS files referenced in JavaScript files.
@@ -33,16 +33,9 @@ import "./editor.scss";
  */
 
 export default function Edit() {
-	const data = useSelect(fetchData);
-	console.log(data);
 
-	if (!data) {
-		return <p>Loading...</p>;
-	}
-
-	return (
-		<p {...useBlockProps()}>
-			{console.log(fetchData)}
-		</p>
-	);
+	const products = useSelect((select) => select(customStore).getProducts());
+	console.log(products);
+  
+	return <p {...useBlockProps()}>{products}</p>;
 }

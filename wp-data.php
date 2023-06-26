@@ -25,7 +25,8 @@
     
     // Get the path to the data.json file
     // $data_file_path = plugin_dir_url( __FILE__ ) . '../wp-content/plugins/wp-data/src/store.json';
-    $data_file_url = plugins_url( 'wp-data/src/store.json', __FILE__ );
+    // $data_file_url = plugins_url( 'wp-data/src/store.json', __FILE__ );
+    $data_file_url = plugins_url( 'src/store.json', __FILE__ );
 
     // Read and parse the JSON data from the file
     $json_data = file_get_contents($data_file_url);
@@ -43,19 +44,27 @@
     // Generate and return the dynamic block markup
     return sprintf(
         '<div>
-            <p>Title: %s<p>
-            <p>Price: %s<p>
-            <p>Description: %s<p>
+            <p>Title: %s</p>
+            <p>Price: %s</p>
+            <p>Description: %s</p>
         </div>',
         esc_html($title),
         esc_html($price),
         esc_html($description)
     );
+
 }
 
 
+add_action( 'enqueue_block_editor_assets', function() {
+    $js = sprintf( 'var LOCALIZED = "%s";', plugins_url( 'src/store.json', __FILE__ ) );
+    wp_print_inline_script_tag( $js );
+} );
+
+/**
+ * Initialize wp data block.
+ */
 function create_block_wp_data_block_init() {
 	register_block_type( __DIR__ . '/build' );
 }
 add_action( 'init', 'create_block_wp_data_block_init' );
-

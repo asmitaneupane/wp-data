@@ -20,7 +20,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__);
 /* harmony import */ var _wordpress_data__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! @wordpress/data */ "@wordpress/data");
 /* harmony import */ var _wordpress_data__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_wordpress_data__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var _fetchData__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./fetchData */ "./src/fetchData.js");
+/* harmony import */ var _store_createStore__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./store/createStore */ "./src/store/createStore.js");
 /* harmony import */ var _editor_scss__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./editor.scss */ "./src/editor.scss");
 
 /**
@@ -58,37 +58,9 @@ __webpack_require__.r(__webpack_exports__);
  */
 
 function Edit() {
-  const data = (0,_wordpress_data__WEBPACK_IMPORTED_MODULE_3__.useSelect)(_fetchData__WEBPACK_IMPORTED_MODULE_4__["default"]);
-  console.log(data);
-  if (!data) {
-    return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", null, "Loading...");
-  }
-  return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", (0,_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.useBlockProps)(), console.log(_fetchData__WEBPACK_IMPORTED_MODULE_4__["default"]));
-}
-
-/***/ }),
-
-/***/ "./src/fetchData.js":
-/*!**************************!*\
-  !*** ./src/fetchData.js ***!
-  \**************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (/* binding */ fetchData)
-/* harmony export */ });
-/* harmony import */ var _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/api-fetch */ "@wordpress/api-fetch");
-/* harmony import */ var _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0__);
-
-function fetchData() {
-  return _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_0___default()("./store.json").then(response => {
-    response.json();
-    console.log(response);
-  }).catch(error => {
-    console.error("Error fetching data:", error);
-    return null;
-  });
+  const products = (0,_wordpress_data__WEBPACK_IMPORTED_MODULE_3__.useSelect)(select => select(_store_createStore__WEBPACK_IMPORTED_MODULE_4__.customStore).getProducts());
+  console.log(products);
+  return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", (0,_wordpress_block_editor__WEBPACK_IMPORTED_MODULE_2__.useBlockProps)(), products);
 }
 
 /***/ }),
@@ -156,7 +128,7 @@ console.log("Hey There!");
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (/* binding */ save)
+/* harmony export */   "default": () => (/* binding */ Save)
 /* harmony export */ });
 /* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/element */ "@wordpress/element");
 /* harmony import */ var _wordpress_element__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_element__WEBPACK_IMPORTED_MODULE_0__);
@@ -180,9 +152,94 @@ __webpack_require__.r(__webpack_exports__);
  *
  * @return {WPElement} Element to render.
  */
-function save() {
+function Save() {
   return (0,_wordpress_element__WEBPACK_IMPORTED_MODULE_0__.createElement)("p", _wordpress_block_editor__WEBPACK_IMPORTED_MODULE_1__.useBlockProps.save(), 'Wp Data – hello from the saved content!');
 }
+
+/***/ }),
+
+/***/ "./src/store/createStore.js":
+/*!**********************************!*\
+  !*** ./src/store/createStore.js ***!
+  \**********************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   CUSTOM_STORE: () => (/* binding */ CUSTOM_STORE),
+/* harmony export */   customStore: () => (/* binding */ customStore)
+/* harmony export */ });
+/* harmony import */ var _wordpress_data__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @wordpress/data */ "@wordpress/data");
+/* harmony import */ var _wordpress_data__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_wordpress_data__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @wordpress/api-fetch */ "@wordpress/api-fetch");
+/* harmony import */ var _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_1__);
+
+
+const CUSTOM_STORE = "wp-data/store";
+const initialState = {
+  products: [],
+  isLoading: false,
+  error: null
+};
+const customStore = (0,_wordpress_data__WEBPACK_IMPORTED_MODULE_0__.createReduxStore)(CUSTOM_STORE, {
+  reducer(state = initialState, action) {
+    switch (action.type) {
+      case "SET_PRODUCTS":
+        return {
+          ...state,
+          products: action.products
+        };
+      case "SET_LOADING":
+        return {
+          ...state,
+          isLoading: action.isLoading
+        };
+      case "SET_ERROR":
+        return {
+          ...state,
+          error: action.error
+        };
+      default:
+        return state;
+    }
+  },
+  actions: {
+    setProducts: products => ({
+      type: "SET_PRODUCTS",
+      products
+    }),
+    setLoading: isLoading => ({
+      type: "SET_LOADING",
+      isLoading
+    }),
+    setError: error => ({
+      type: "SET_ERROR",
+      error
+    }),
+    fetchData: () => {
+      return async dispatch => {
+        try {
+          dispatch(actions.setLoading(true));
+          const response = await _wordpress_api_fetch__WEBPACK_IMPORTED_MODULE_1___default()({
+            url: LOCALIZED
+          });
+          const data = await response.json();
+          dispatch(actions.setProducts(data));
+        } catch (error) {
+          dispatch(actions.setError(error.message));
+        } finally {
+          dispatch(actions.setLoading(false));
+        }
+      };
+    }
+  },
+  selectors: {
+    getProducts(state) {
+      return state.products;
+    }
+  }
+});
+(0,_wordpress_data__WEBPACK_IMPORTED_MODULE_0__.register)(customStore);
 
 /***/ }),
 
